@@ -1,0 +1,26 @@
+{
+  "name": "vantage",
+  "version": "1.0.0",
+  "description": "MERN storefront for Vantage active and lifestyle wear",
+  "main": "index.js",
+  "scripts": {
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "dev": "concurrently npm:dev:server npm:dev:client"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AshenIsuruWijesuriya/vantage.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/AshenIsuruWijesuriya/vantage/issues"
+  },
+  "homepage": "https://github.com/AshenIsuruWijesuriya/vantage#readme",
+  "devDependencies": {
+    "concurrently": "^10.0.6"
+  }
+}
