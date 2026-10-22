@@ -4,6 +4,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+import productRoutes from './routes/productRoutes.js';
 
 dotenv.config();
 connectDB();
@@ -16,7 +17,7 @@ if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
-// Routes are added here in Steps 4, 6 and 9
+app.use('/api/products', productRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
