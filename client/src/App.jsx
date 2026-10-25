@@ -2,10 +2,12 @@ import { Routes, Route, Outlet } from 'react-router-dom';
 import AnnouncementBar from './components/AnnouncementBar';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import CollectionPage from './pages/CollectionPage';
 import ProductPage from './pages/ProductPage';
 import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ComingSoon from './pages/ComingSoon';
@@ -27,8 +29,15 @@ const App = () => (
       <Route path="/collections/:gender" element={<CollectionPage />} />
       <Route path="/products/:slug" element={<ProductPage />} />
       <Route path="/cart" element={<CartPage />} />
-      <Route path="/checkout" element={<ComingSoon title="Checkout" />} />      <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+
+      {/* Logged-in customers only */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/orders" element={<ComingSoon title="My orders" />} />
+      </Route>
+
       <Route path="*" element={<ComingSoon title="Page not found" />} />
     </Route>
   </Routes>
