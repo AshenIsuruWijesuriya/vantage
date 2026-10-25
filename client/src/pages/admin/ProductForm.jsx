@@ -14,14 +14,15 @@ const SIZE_PRESETS = {
   'Women XS–L': ['XS', 'S', 'M', 'L'],
   'One size': ['One size'],
 };
-const MAX_IMAGES = 8;
+const MAX_IMAGES = 8; // per colour
+
+const newColour = (name = '', hex = '#888888') => ({ name, hex, images: [] });
 
 const EMPTY_FORM = {
   name: '', slug: '', description: '', gender: 'women', category: '',
   activities: [], price: '', compareAtPrice: '', badge: '',
   isFeatured: false,
-  images: [],
-  colours: [{ name: 'Black', hex: '#1a1c20' }],
+  colours: [newColour('Black', '#1a1c20')],
   sizes: [],
 };
 
@@ -39,7 +40,7 @@ const ProductForm = () => {
   const [slugTouched, setSlugTouched] = useState(isEdit);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [uploadingFor, setUploadingFor] = useState(null); // index of the colour being uploaded to
   const [error, setError] = useState('');
 
   // When editing, load the product and fill in the form
@@ -47,6 +48,11 @@ const ProductForm = () => {
     if (!isEdit) return;
     api.get(`/products/${editSlug}`)
       .then(({ data }) => {
+        const colours = data.colours.map((c) => ({ name: c.name, hex: c.hex, images: c.images || [] }));
+        // Older products kept photos on the product itself: give them to the first colour
+        if (colours.length && colours.every((c) => c.images.length === 0) && data.images?.length) {
+          colours[0].images = [...data.images];
+        }
         setProductId(data._id);
         setForm({
           name: data.name,
@@ -59,8 +65,7 @@ const ProductForm = () => {
           compareAtPrice: data.compareAtPrice ? String(data.compareAtPrice) : '',
           badge: data.badge || '',
           isFeatured: Boolean(data.isFeatured),
-          images: data.images || [],
-          colours: data.colours.map(({ name, hex }) => ({ name, hex })),
+          colours,
           sizes: data.sizes.map(({ size, stock }) => ({ size, stock: String(stock) })),
         });
       })
@@ -83,7 +88,10 @@ const ProductForm = () => {
 
   // Helpers for the colour and size lists
   const updateRow = (list, index, field, value) =>
-    set(list, form[list].map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+    setForm((f) => ({
+      ...f,
+      [list]: f[list].map((row, i) => (i === index ? { ...row, [field]: value } : row)),
+    }));
   const removeRow = (list, index) => set(list, form[list].filter((_, i) => i !== index));
   const addRow = (list, row) => set(list, [...form[list], row]);
 
@@ -91,34 +99,42 @@ const ProductForm = () => {
   const applyPreset = (sizes) =>
     set('sizes', sizes.map((size) => form.sizes.find((s) => s.size === size) || { size, stock: '10' }));
 
-  // ---- Images ----
-  const handleFiles = async (e) => {
+  // ---- Photos for one colour ----
+  const handleFiles = async (colourIndex, e) => {
     const files = Array.from(e.target.files || []);
     e.target.value = ''; // lets you pick the same file again later
     if (files.length === 0) return;
-    if (form.images.length + files.length > MAX_IMAGES) {
-      setError(`A product can have up to ${MAX_IMAGES} images.`);
+    if (form.colours[colourIndex].images.length + files.length > MAX_IMAGES) {
+      setError(`Each colour can have up to ${MAX_IMAGES} photos.`);
       return;
     }
 
     const body = new FormData();
     files.forEach((file) => body.append('images', file));
 
-    setUploading(true);
+    setUploadingFor(colourIndex);
     setError('');
     try {
       const { data } = await api.post('/upload', body);
-      setForm((f) => ({ ...f, images: [...f.images, ...data.urls] }));
+      setForm((f) => ({
+        ...f,
+        colours: f.colours.map((c, i) =>
+          i === colourIndex ? { ...c, images: [...c.images, ...data.urls] } : c),
+      }));
     } catch (err) {
       setError(errorMessage(err));
     } finally {
-      setUploading(false);
+      setUploadingFor(null);
     }
   };
 
-  const makeMain = (index) =>
-    set('images', [form.images[index], ...form.images.filter((_, i) => i !== index)]);
-  const removeImage = (index) => set('images', form.images.filter((_, i) => i !== index));
+  const makeMain = (colourIndex, imageIndex) => {
+    const imgs = form.colours[colourIndex].images;
+    updateRow('colours', colourIndex, 'images', [imgs[imageIndex], ...imgs.filter((_, i) => i !== imageIndex)]);
+  };
+  const removeImage = (colourIndex, imageIndex) =>
+    updateRow('colours', colourIndex, 'images',
+      form.colours[colourIndex].images.filter((_, i) => i !== imageIndex));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -133,6 +149,7 @@ const ProductForm = () => {
       return;
     }
 
+    const colours = form.colours.map((c) => ({ name: c.name.trim(), hex: c.hex, images: c.images }));
     const payload = {
       name: form.name.trim(),
       slug: toSlug(form.slug),
@@ -142,10 +159,11 @@ const ProductForm = () => {
       activities: form.activities,
       price: Number(form.price),
       compareAtPrice: Number(form.compareAtPrice) || 0,
-      images: form.images,
+      // The product's main photos = the first colour that has photos
+      images: colours.find((c) => c.images.length)?.images || [],
       badge: form.badge.trim(),
       isFeatured: form.isFeatured,
-      colours: form.colours.map((c) => ({ name: c.name.trim(), hex: c.hex })),
+      colours,
       sizes: form.sizes.map((s) => ({ size: s.size.trim(), stock: Math.max(0, Number(s.stock) || 0) })),
     };
 
@@ -231,48 +249,6 @@ const ProductForm = () => {
           </div>
         </fieldset>
 
-        {/* Images */}
-        <fieldset className="form-section">
-          <legend>Images</legend>
-          <p className="hint">
-            The first image is the main photo on product cards and the product page.
-            JPG, PNG or WebP, up to 5 MB each, up to {MAX_IMAGES} per product.
-          </p>
-
-          {form.images.length > 0 && (
-            <ul className="image-grid">
-              {form.images.map((url, i) => (
-                <li key={`${url}-${i}`} className="image-tile">
-                  <img src={url} alt={`Product image ${i + 1}`} />
-                  <div className="tile-bar">
-                    {i === 0 ? (
-                      <span className="tile-main">Main</span>
-                    ) : (
-                      <button type="button" className="tile-btn" onClick={() => makeMain(i)}>Make main</button>
-                    )}
-                    <button type="button" className="tile-btn danger" onClick={() => removeImage(i)}
-                      aria-label={`Remove image ${i + 1}`}>
-                      Remove
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {form.images.length < MAX_IMAGES && (
-            <label className={`upload-box ${uploading ? 'busy' : ''}`}>
-              <input
-                type="file" multiple disabled={uploading}
-                accept="image/jpeg,image/png,image/webp,image/avif"
-                onChange={handleFiles}
-              />
-              <strong>{uploading ? 'Uploading…' : '+ Upload images'}</strong>
-              <span>{uploading ? 'Please wait' : 'Choose one or more photos from your computer'}</span>
-            </label>
-          )}
-        </fieldset>
-
         {/* Price and display */}
         <fieldset className="form-section">
           <legend>Price and display</legend>
@@ -309,24 +285,69 @@ const ProductForm = () => {
           </label>
         </fieldset>
 
-        {/* Colours */}
+        {/* Colours, each with its own photos */}
         <fieldset className="form-section">
-          <legend>Colours</legend>
+          <legend>Colours and photos</legend>
+          <p className="hint">
+            Add each colour, then upload photos of the product in that colour. The first photo is
+            the main one. The first colour's main photo is shown on product cards.
+          </p>
+
           <div className="row-list">
-            {form.colours.map((c, i) => (
-              <div key={i} className="edit-row">
-                <input type="text" aria-label={`Colour ${i + 1} name`} placeholder="Colour name"
-                  value={c.name} onChange={(e) => updateRow('colours', i, 'name', e.target.value)} />
-                <input type="color" aria-label={`Colour ${i + 1} swatch`}
-                  value={c.hex} onChange={(e) => updateRow('colours', i, 'hex', e.target.value)} />
-                <button type="button" className="text-btn danger" onClick={() => removeRow('colours', i)}>
-                  Remove
-                </button>
+            {form.colours.map((c, ci) => (
+              <div key={ci} className="colour-card">
+                <div className="edit-row">
+                  <input type="text" aria-label={`Colour ${ci + 1} name`} placeholder="Colour name"
+                    value={c.name} onChange={(e) => updateRow('colours', ci, 'name', e.target.value)} />
+                  <input type="color" aria-label={`Colour ${ci + 1} swatch`}
+                    value={c.hex} onChange={(e) => updateRow('colours', ci, 'hex', e.target.value)} />
+                  <button type="button" className="text-btn danger" onClick={() => removeRow('colours', ci)}>
+                    Remove colour
+                  </button>
+                </div>
+
+                {c.images.length > 0 && (
+                  <ul className="image-grid small">
+                    {c.images.map((url, ii) => (
+                      <li key={`${url}-${ii}`} className="image-tile">
+                        <img src={url} alt={`${c.name || 'Colour'} photo ${ii + 1}`} />
+                        <div className="tile-bar">
+                          {ii === 0 ? (
+                            <span className="tile-main">Main</span>
+                          ) : (
+                            <button type="button" className="tile-btn" onClick={() => makeMain(ci, ii)}>
+                              Make main
+                            </button>
+                          )}
+                          <button type="button" className="tile-btn danger" onClick={() => removeImage(ci, ii)}
+                            aria-label={`Remove ${c.name || 'colour'} photo ${ii + 1}`}>
+                            Remove
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {c.images.length < MAX_IMAGES && (
+                  <label className={`upload-box compact ${uploadingFor === ci ? 'busy' : ''}`}>
+                    <input
+                      type="file" multiple disabled={uploadingFor !== null}
+                      accept="image/jpeg,image/png,image/webp,image/avif"
+                      onChange={(e) => handleFiles(ci, e)}
+                    />
+                    <strong>
+                      {uploadingFor === ci ? 'Uploading…' : `+ Add photos for ${c.name || 'this colour'}`}
+                    </strong>
+                    <span>JPG, PNG or WebP, up to 5 MB each</span>
+                  </label>
+                )}
               </div>
             ))}
           </div>
+
           <div>
-            <button type="button" className="chip" onClick={() => addRow('colours', { name: '', hex: '#888888' })}>
+            <button type="button" className="chip" onClick={() => addRow('colours', newColour())}>
               + Add colour
             </button>
           </div>
@@ -366,7 +387,7 @@ const ProductForm = () => {
         {error && <p className="form-error" role="alert">{error}</p>}
 
         <div className="form-actions">
-          <button className="btn ink" type="submit" disabled={saving || uploading}>
+          <button className="btn ink" type="submit" disabled={saving || uploadingFor !== null}>
             {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Add product'}
           </button>
           <Link className="text-btn" to="/admin/products">Cancel</Link>
