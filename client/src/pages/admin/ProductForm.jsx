@@ -14,11 +14,13 @@ const SIZE_PRESETS = {
   'Women XS–L': ['XS', 'S', 'M', 'L'],
   'One size': ['One size'],
 };
+const MAX_IMAGES = 8;
 
 const EMPTY_FORM = {
   name: '', slug: '', description: '', gender: 'women', category: '',
-  activities: [], price: '', compareAtPrice: '', image: '', badge: '',
+  activities: [], price: '', compareAtPrice: '', badge: '',
   isFeatured: false,
+  images: [],
   colours: [{ name: 'Black', hex: '#1a1c20' }],
   sizes: [],
 };
@@ -37,6 +39,7 @@ const ProductForm = () => {
   const [slugTouched, setSlugTouched] = useState(isEdit);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
   // When editing, load the product and fill in the form
@@ -54,9 +57,9 @@ const ProductForm = () => {
           activities: data.activities || [],
           price: String(data.price),
           compareAtPrice: data.compareAtPrice ? String(data.compareAtPrice) : '',
-          image: data.images?.[0] || '',
           badge: data.badge || '',
           isFeatured: Boolean(data.isFeatured),
+          images: data.images || [],
           colours: data.colours.map(({ name, hex }) => ({ name, hex })),
           sizes: data.sizes.map(({ size, stock }) => ({ size, stock: String(stock) })),
         });
@@ -88,6 +91,35 @@ const ProductForm = () => {
   const applyPreset = (sizes) =>
     set('sizes', sizes.map((size) => form.sizes.find((s) => s.size === size) || { size, stock: '10' }));
 
+  // ---- Images ----
+  const handleFiles = async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = ''; // lets you pick the same file again later
+    if (files.length === 0) return;
+    if (form.images.length + files.length > MAX_IMAGES) {
+      setError(`A product can have up to ${MAX_IMAGES} images.`);
+      return;
+    }
+
+    const body = new FormData();
+    files.forEach((file) => body.append('images', file));
+
+    setUploading(true);
+    setError('');
+    try {
+      const { data } = await api.post('/upload', body);
+      setForm((f) => ({ ...f, images: [...f.images, ...data.urls] }));
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const makeMain = (index) =>
+    set('images', [form.images[index], ...form.images.filter((_, i) => i !== index)]);
+  const removeImage = (index) => set('images', form.images.filter((_, i) => i !== index));
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -110,7 +142,7 @@ const ProductForm = () => {
       activities: form.activities,
       price: Number(form.price),
       compareAtPrice: Number(form.compareAtPrice) || 0,
-      images: form.image.trim() ? [form.image.trim()] : [],
+      images: form.images,
       badge: form.badge.trim(),
       isFeatured: form.isFeatured,
       colours: form.colours.map((c) => ({ name: c.name.trim(), hex: c.hex })),
@@ -199,6 +231,48 @@ const ProductForm = () => {
           </div>
         </fieldset>
 
+        {/* Images */}
+        <fieldset className="form-section">
+          <legend>Images</legend>
+          <p className="hint">
+            The first image is the main photo on product cards and the product page.
+            JPG, PNG or WebP, up to 5 MB each, up to {MAX_IMAGES} per product.
+          </p>
+
+          {form.images.length > 0 && (
+            <ul className="image-grid">
+              {form.images.map((url, i) => (
+                <li key={`${url}-${i}`} className="image-tile">
+                  <img src={url} alt={`Product image ${i + 1}`} />
+                  <div className="tile-bar">
+                    {i === 0 ? (
+                      <span className="tile-main">Main</span>
+                    ) : (
+                      <button type="button" className="tile-btn" onClick={() => makeMain(i)}>Make main</button>
+                    )}
+                    <button type="button" className="tile-btn danger" onClick={() => removeImage(i)}
+                      aria-label={`Remove image ${i + 1}`}>
+                      Remove
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {form.images.length < MAX_IMAGES && (
+            <label className={`upload-box ${uploading ? 'busy' : ''}`}>
+              <input
+                type="file" multiple disabled={uploading}
+                accept="image/jpeg,image/png,image/webp,image/avif"
+                onChange={handleFiles}
+              />
+              <strong>{uploading ? 'Uploading…' : '+ Upload images'}</strong>
+              <span>{uploading ? 'Please wait' : 'Choose one or more photos from your computer'}</span>
+            </label>
+          )}
+        </fieldset>
+
         {/* Price and display */}
         <fieldset className="form-section">
           <legend>Price and display</legend>
@@ -217,23 +291,15 @@ const ProductForm = () => {
             </div>
           </div>
 
-          <div className="form-grid">
-            <div className="field">
-              <label htmlFor="badge">Badge</label>
-              <input id="badge" list="badge-options" value={form.badge} placeholder="e.g. New"
-                onChange={(e) => set('badge', e.target.value)} />
-              <datalist id="badge-options">
-                <option value="New" />
-                <option value="Best seller" />
-                <option value="Limited" />
-              </datalist>
-            </div>
-            <div className="field">
-              <label htmlFor="image">Image path</label>
-              <input id="image" value={form.image} placeholder="/images/products/my-product.jpg"
-                onChange={(e) => set('image', e.target.value)} />
-              <span className="hint">Leave empty to show the colour panel.</span>
-            </div>
+          <div className="field">
+            <label htmlFor="badge">Badge</label>
+            <input id="badge" list="badge-options" value={form.badge} placeholder="e.g. New"
+              onChange={(e) => set('badge', e.target.value)} />
+            <datalist id="badge-options">
+              <option value="New" />
+              <option value="Best seller" />
+              <option value="Limited" />
+            </datalist>
           </div>
 
           <label className="check">
@@ -300,7 +366,7 @@ const ProductForm = () => {
         {error && <p className="form-error" role="alert">{error}</p>}
 
         <div className="form-actions">
-          <button className="btn ink" type="submit" disabled={saving}>
+          <button className="btn ink" type="submit" disabled={saving || uploading}>
             {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Add product'}
           </button>
           <Link className="text-btn" to="/admin/products">Cancel</Link>

@@ -17,6 +17,7 @@ const ProductPage = () => {
   const [size, setSize] = useState('');
   const [error, setError] = useState('');
   const [added, setAdded] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
   const [hasImage, setHasImage] = useState(true);
 
   // Load the product whenever the URL slug changes
@@ -24,6 +25,7 @@ const ProductPage = () => {
     setProduct(null);
     setError('');
     setAdded(false);
+    setActiveImage(0);
     setHasImage(true);
     api.get(`/products/${slug}`)
       .then(({ data }) => {
@@ -47,17 +49,24 @@ const ProductPage = () => {
 
   if (!product) return <p className="wrap status-msg">Loading product…</p>;
 
+  const images = product.images.filter(Boolean);
   const selectedColour = product.colours.find((c) => c.name === colour);
   const chosenSize = product.sizes.find((s) => s.size === size);
   const onSale = product.compareAtPrice > product.price;
   const collection = collectionFor(product.gender);
+  const showImage = images.length > 0 && hasImage;
+
+  const showPhoto = (index) => {
+    setActiveImage(index);
+    setHasImage(true);
+  };
 
   const handleAdd = () => {
     addItem({
       productId: product._id,
       slug: product.slug,
       name: product.name,
-      image: product.images[0] || '',
+      image: images[0] || '',
       colourHex: selectedColour?.hex || '',
       price: product.price,
       colour,
@@ -77,14 +86,36 @@ const ProductPage = () => {
       </nav>
 
       <div className="product-layout">
-        {/* Image, or a panel in the selected colour until photos are added */}
-        <div className="product-media" style={{ background: selectedColour?.hex || 'var(--line)' }}>
-          {product.badge && <span className="badge">{product.badge}</span>}
-          {onSale && <span className="badge sale">Sale</span>}
-          {hasImage ? (
-            <img src={product.images[0]} alt={product.name} onError={() => setHasImage(false)} />
-          ) : (
-            <span className="card-placeholder">{product.category.replace('-', ' ')}</span>
+        <div className="product-gallery">
+          {/* Main photo, or a panel in the selected colour if there are no photos */}
+          <div className="product-media" style={{ background: selectedColour?.hex || 'var(--line)' }}>
+            {product.badge && <span className="badge">{product.badge}</span>}
+            {onSale && <span className="badge sale">Sale</span>}
+            {showImage ? (
+              <img
+                src={images[activeImage]}
+                alt={`${product.name}, photo ${activeImage + 1} of ${images.length}`}
+                onError={() => setHasImage(false)}
+              />
+            ) : (
+              <span className="card-placeholder">{product.category.replace('-', ' ')}</span>
+            )}
+          </div>
+
+          {images.length > 1 && (
+            <div className="thumbs">
+              {images.map((url, i) => (
+                <button
+                  key={`${url}-${i}`}
+                  className="thumb"
+                  aria-label={`Show photo ${i + 1}`}
+                  aria-pressed={i === activeImage}
+                  onClick={() => showPhoto(i)}
+                >
+                  <img src={url} alt="" loading="lazy" />
+                </button>
+              ))}
+            </div>
           )}
         </div>
 
