@@ -1,0 +1,47 @@
+/* My orders page */
+.orders-page { padding-block: 40px 64px; }
+.orders-page > h1 { font-size: clamp(48px, 7vw, 88px); font-weight: 900; margin-bottom: 24px; }
+
+.placed-banner {
+  background: var(--band); color: var(--band-ink);
+  padding: 18px 20px; margin: 0 0 28px; display: grid; gap: 4px;
+}
+.placed-banner strong { font-family: var(--display); font-size: 26px; text-transform: uppercase; }
+.placed-banner span { color: var(--band-muted); }
+
+.order-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 20px; }
+.order-card { background: var(--surface); border: 1px solid var(--line); }
+.order-card.highlight { border: 2px solid var(--ink); }
+
+.order-head {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+  gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line);
+}
+.order-head .order-no { font-family: var(--label); font-weight: 700; font-size: 18px; letter-spacing: 0.06em; }
+.order-head .order-date { color: var(--muted); font-size: 14px; }
+
+.status {
+  font-family: var(--label); font-weight: 700; font-size: 12px; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 5px 10px; border-radius: 999px;
+}
+.status.pending { background: #fdf0d5; color: #8a5a00; }
+.status.processing { background: #dde6ff; color: #1f47e0; }
+.status.shipped { background: #e8e0ff; color: #5b3cc4; }
+.status.delivered { background: #dcf3e3; color: #1d7a3d; }
+.status.cancelled { background: #fbe1dc; color: #b3311b; }
+
+.order-body { display: grid; grid-template-columns: 1fr 280px; gap: 24px; padding: 20px; }
+.order-items { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; align-content: start; }.order-items li { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; }
+.order-items .meta { color: var(--muted); font-size: 14px; display: block; }
+
+.order-side { display: grid; gap: 14px; align-content: start; font-size: 14px; }
+.order-side h3 {
+  font-family: var(--label); font-size: 13px; letter-spacing: 0.12em; margin-bottom: 4px;
+}
+.order-side address { font-style: normal; color: var(--muted); line-height: 1.5; }
+.order-totals .summary-row { display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+.order-totals .summary-row.total { font-weight: 700; font-size: 16px; padding-top: 8px; border-top: 1px solid var(--line); margin-top: 4px; }
+
+@media (max-width: 760px) {
+  .order-body { grid-template-columns: 1fr; }
+}
