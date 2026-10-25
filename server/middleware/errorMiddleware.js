@@ -26,6 +26,22 @@ export const errorHandler = (err, req, res, next) => {
     message = `That ${Object.keys(err.keyValue)[0]} is already in use`;
   }
 
+  // The request body isn't valid JSON
+  if (err.type === 'entity.parse.failed') {
+    status = 400;
+    message = 'Request body is not valid JSON';
+  }
+
+  // Image upload problems
+  if (err.name === 'MulterError') {
+    status = 400;
+    if (err.code === 'LIMIT_FILE_SIZE') message = 'Each image must be 5 MB or smaller';
+    else if (err.code === 'LIMIT_FILE_COUNT' || err.code === 'LIMIT_UNEXPECTED_FILE') {
+      message = 'Upload up to 6 images at a time';
+    }
+  }
+  if (err.code === 'INVALID_FILE_TYPE') status = 400;
+
   res.status(status).json({
     message,
     stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
