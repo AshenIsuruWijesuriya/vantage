@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import CollectionPage from './pages/CollectionPage';
 import ProductPage from './pages/ProductPage';
+import CartPage from './pages/CartPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ComingSoon from './pages/ComingSoon';
@@ -25,8 +26,8 @@ const App = () => (
       <Route path="/" element={<HomePage />} />
       <Route path="/collections/:gender" element={<CollectionPage />} />
       <Route path="/products/:slug" element={<ProductPage />} />
-      <Route path="/cart" element={<ComingSoon title="Your bag" />} />
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/cart" element={<CartPage />} />
+      <Route path="/checkout" element={<ComingSoon title="Checkout" />} />      <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="*" element={<ComingSoon title="Page not found" />} />
     </Route>
