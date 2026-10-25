@@ -1,8 +1,10 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 const Header = () => {
   const { user, logout } = useAuth();
+  const { count } = useCart();
 
   return (
     <header className="site-header">
@@ -24,7 +26,7 @@ const Header = () => {
           ) : (
             <Link to="/login">Log in</Link>
           )}
-          <Link to="/cart">Bag (0)</Link>
+          <Link to="/cart" aria-label={`Bag, ${count} items`}>Bag ({count})</Link>
         </div>
       </div>
     </header>
