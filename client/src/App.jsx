@@ -8,6 +8,7 @@ import CollectionPage from './pages/CollectionPage';
 import ProductPage from './pages/ProductPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
+import OrdersPage from './pages/OrdersPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ComingSoon from './pages/ComingSoon';
@@ -35,7 +36,7 @@ const App = () => (
       {/* Logged-in customers only */}
       <Route element={<ProtectedRoute />}>
         <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/orders" element={<ComingSoon title="My orders" />} />
+        <Route path="/orders" element={<OrdersPage />} />
       </Route>
 
       <Route path="*" element={<ComingSoon title="Page not found" />} />
