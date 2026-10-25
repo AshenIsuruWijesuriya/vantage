@@ -97,3 +97,44 @@
   .product-layout { grid-template-columns: 1fr; gap: 24px; }
   .product-gallery { width: 100%; max-width: 520px; }
 }
+
+/* Thumbnails beside the main photo on laptops */
+.product-gallery.has-thumbs {
+  grid-template-columns: 64px minmax(0, 1fr);
+  grid-template-areas: "thumbs main";
+  align-items: start;
+  width: min(100%, max(380px, calc((100vh - 200px) * 0.8 + 74px)));
+  width: min(100%, max(380px, calc((100svh - 200px) * 0.8 + 74px)));
+}
+.product-gallery.has-thumbs .product-media { grid-area: main; }
+.product-gallery.has-thumbs .thumbs {
+  grid-area: thumbs;
+  grid-template-columns: 1fr;
+  max-height: calc(100vh - 200px);
+  max-height: calc(100svh - 200px);
+  overflow-y: auto;
+}
+
+/* Phones: thumbnails in a row under the photo */
+@media (max-width: 800px) {
+  .product-gallery.has-thumbs {
+    grid-template-columns: 1fr;
+    grid-template-areas: "main" "thumbs";
+    width: 100%;
+  }
+  .product-gallery.has-thumbs .thumbs {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 64px;
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+}
+
+/* Colour dots on product cards (hover to preview that colour) */
+.swatches button {
+  width: 14px; height: 14px; padding: 0; border-radius: 50%;
+  border: 1px solid var(--line);
+}
+.swatches button.active { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--ink); }
