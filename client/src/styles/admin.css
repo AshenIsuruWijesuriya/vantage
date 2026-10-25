@@ -139,3 +139,16 @@
 }
 .image-grid.small { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
 .upload-box.compact { padding: 16px; background: var(--surface); }
+
+/* Admin orders */
+.status-select {
+  font: 500 14px var(--body); padding: 6px 8px; color: var(--ink);
+  background: var(--surface); border: 1.5px solid var(--line);
+}
+.status-select:disabled { opacity: 0.5; }
+.order-details-row td { background: var(--bg); }
+.order-details { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 24px; padding-block: 6px; }
+.order-details h3 { font-family: var(--label); font-size: 12px; letter-spacing: 0.12em; margin-bottom: 6px; }
+.order-details ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.order-details p { margin: 0; color: var(--muted); line-height: 1.5; }
+@media (max-width: 760px) { .order-details { grid-template-columns: 1fr; } }
