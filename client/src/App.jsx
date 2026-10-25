@@ -4,6 +4,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import CollectionPage from './pages/CollectionPage';
+import ProductPage from './pages/ProductPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ComingSoon from './pages/ComingSoon';
@@ -23,7 +24,7 @@ const App = () => (
     <Route element={<Layout />}>
       <Route path="/" element={<HomePage />} />
       <Route path="/collections/:gender" element={<CollectionPage />} />
-      <Route path="/products/:slug" element={<ComingSoon title="Product" />} />
+      <Route path="/products/:slug" element={<ProductPage />} />
       <Route path="/cart" element={<ComingSoon title="Your bag" />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />

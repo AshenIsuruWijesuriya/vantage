@@ -68,6 +68,7 @@ h1, h2, h3 {
   text-transform: uppercase; font-size: 14px;
 }
 .header-actions .hello { color: var(--band-muted); }
+.header-actions button { text-transform: inherit; letter-spacing: inherit; }
 
 /* Hero */
 .hero { background: var(--band); color: var(--band-ink); }
