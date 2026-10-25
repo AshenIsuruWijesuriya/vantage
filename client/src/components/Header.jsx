@@ -21,6 +21,7 @@ const Header = () => {
           {user ? (
             <>
               <span className="hello">Hi, {user.name.split(' ')[0]}</span>
+              {user.isAdmin && <Link to="/admin/products">Admin</Link>}
               <Link to="/orders">Orders</Link>
               <button onClick={logout}>Log out</button>
             </>
