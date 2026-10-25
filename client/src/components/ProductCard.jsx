@@ -3,26 +3,27 @@ import { Link } from 'react-router-dom';
 import { formatLKR } from '../utils/format';
 
 const ProductCard = ({ product }) => {
-  // Until real photos are added, show a colour panel instead of a broken image
-  const [hasImage, setHasImage] = useState(true);
-  const mainColour = product.colours[0];
+  const [colourIndex, setColourIndex] = useState(0);
+  const [brokenImages, setBrokenImages] = useState({}); // photos that failed to load
+
+  const colour = product.colours[colourIndex] || product.colours[0];
+  // This colour's main photo. Older products keep photos on the product itself (first colour only).
+  const image = colour?.images?.[0] || (colourIndex === 0 ? product.images[0] : '');
+  const showImage = Boolean(image) && !brokenImages[image];
   const onSale = product.compareAtPrice > product.price;
+  const link = `/products/${product.slug}?colour=${encodeURIComponent(colour?.name || '')}`;
 
   return (
     <article className="card">
-      <Link
-        to={`/products/${product.slug}`}
-        className="card-img"
-        style={{ background: mainColour?.hex || 'var(--line)' }}
-      >
+      <Link to={link} className="card-img" style={{ background: colour?.hex || 'var(--line)' }}>
         {product.badge && <span className="badge">{product.badge}</span>}
         {onSale && <span className="badge sale">Sale</span>}
-        {hasImage ? (
+        {showImage ? (
           <img
-            src={product.images[0]}
-            alt={product.name}
+            src={image}
+            alt={`${product.name} in ${colour.name}`}
             loading="lazy"
-            onError={() => setHasImage(false)}
+            onError={() => setBrokenImages((b) => ({ ...b, [image]: true }))}
           />
         ) : (
           <span className="card-placeholder">{product.category.replace('-', ' ')}</span>
@@ -30,12 +31,12 @@ const ProductCard = ({ product }) => {
       </Link>
 
       <h3 className="card-name">
-        <Link to={`/products/${product.slug}`}>{product.name}</Link>
+        <Link to={link}>{product.name}</Link>
       </h3>
 
       <div className="card-meta">
         <span>
-          {mainColour?.name}
+          {colour?.name}
           {product.colours.length > 1 && ` · ${product.colours.length} colours`}
         </span>
         <span className="price">
@@ -45,8 +46,18 @@ const ProductCard = ({ product }) => {
       </div>
 
       <div className="swatches">
-        {product.colours.map((c) => (
-          <i key={c.name} style={{ background: c.hex }} title={c.name} />
+        {product.colours.map((c, i) => (
+          <button
+            key={c.name}
+            type="button"
+            className={i === colourIndex ? 'active' : ''}
+            style={{ background: c.hex }}
+            title={c.name}
+            aria-label={`Show ${product.name} in ${c.name}`}
+            onMouseEnter={() => setColourIndex(i)}
+            onFocus={() => setColourIndex(i)}
+            onClick={() => setColourIndex(i)}
+          />
         ))}
       </div>
     </article>

@@ -25,6 +25,7 @@ h1, h2, h3 {
 }
 
 .wrap { max-width: 1360px; margin: 0 auto; padding-inline: 16px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .block { padding-block: 64px; }
 .eyebrow {
   font-family: var(--label); text-transform: uppercase; letter-spacing: 0.14em;
@@ -203,6 +204,16 @@ h1, h2, h3 {
 .form-error { color: var(--sale); font-weight: 600; margin: 0; }
 
 /* Phone layout (keep this block at the end of the file) */
+@media (max-width: 800px) {
+  .header-bar { grid-template-columns: 1fr auto; }
+  .main-nav { display: none; }
+  .logo { justify-self: start; }
+  .hero .wrap { grid-template-columns: 1fr; }
+  .site-footer .wrap { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .auth-card { padding: 28px 20px; }
+}
+
 @media (max-width: 800px) {
   .header-bar { grid-template-columns: 1fr auto; }
   .main-nav { display: none; }

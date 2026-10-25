@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import api, { errorMessage } from '../api/axios';
 import { useCart, FREE_DELIVERY } from '../context/CartContext';
 import { formatLKR } from '../utils/format';
@@ -10,6 +10,7 @@ const collectionFor = (gender) => (gender === 'unisex' ? 'accessories' : gender)
 
 const ProductPage = () => {
   const { slug } = useParams();
+  const [searchParams] = useSearchParams();
   const { addItem } = useCart();
 
   const [product, setProduct] = useState(null);
@@ -17,23 +18,27 @@ const ProductPage = () => {
   const [size, setSize] = useState('');
   const [error, setError] = useState('');
   const [added, setAdded] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
   const [hasImage, setHasImage] = useState(true);
 
-  // Load the product whenever the URL slug changes
+  // Load the product whenever the URL changes
   useEffect(() => {
     setProduct(null);
     setError('');
     setAdded(false);
+    setActiveImage(0);
     setHasImage(true);
     api.get(`/products/${slug}`)
       .then(({ data }) => {
         setProduct(data);
-        setColour(data.colours[0]?.name || '');
+        // Start on the colour chosen on the product card (?colour=Ice), or the first colour
+        const wanted = searchParams.get('colour');
+        setColour(data.colours.find((c) => c.name === wanted)?.name || data.colours[0]?.name || '');
         // One-size items (bags, bottles, caps) are pre-selected
         setSize(data.sizes.length === 1 ? data.sizes[0].size : '');
       })
       .catch((err) => setError(errorMessage(err)));
-  }, [slug]);
+  }, [slug, searchParams]);
 
   if (error) {
     return (
@@ -48,16 +53,37 @@ const ProductPage = () => {
   if (!product) return <p className="wrap status-msg">Loading product…</p>;
 
   const selectedColour = product.colours.find((c) => c.name === colour);
+  const isFirstColour = product.colours[0]?.name === colour;
+  // Photos for the selected colour. Older products keep photos on the product (first colour only).
+  const colourImages = (selectedColour?.images || []).filter(Boolean);
+  const images = colourImages.length
+    ? colourImages
+    : isFirstColour ? product.images.filter(Boolean) : [];
+
   const chosenSize = product.sizes.find((s) => s.size === size);
   const onSale = product.compareAtPrice > product.price;
   const collection = collectionFor(product.gender);
+  const showImage = images.length > 0 && hasImage;
+  const current = Math.min(activeImage, Math.max(images.length - 1, 0));
+
+  const showPhoto = (index) => {
+    setActiveImage(index);
+    setHasImage(true);
+  };
+
+  const chooseColour = (name) => {
+    setColour(name);
+    setActiveImage(0); // start at that colour's main photo
+    setHasImage(true);
+    setAdded(false);
+  };
 
   const handleAdd = () => {
     addItem({
       productId: product._id,
       slug: product.slug,
       name: product.name,
-      image: product.images[0] || '',
+      image: images[0] || '',
       colourHex: selectedColour?.hex || '',
       price: product.price,
       colour,
@@ -77,14 +103,36 @@ const ProductPage = () => {
       </nav>
 
       <div className="product-layout">
-        {/* Image, or a panel in the selected colour until photos are added */}
-        <div className="product-media" style={{ background: selectedColour?.hex || 'var(--line)' }}>
-          {product.badge && <span className="badge">{product.badge}</span>}
-          {onSale && <span className="badge sale">Sale</span>}
-          {hasImage ? (
-            <img src={product.images[0]} alt={product.name} onError={() => setHasImage(false)} />
-          ) : (
-            <span className="card-placeholder">{product.category.replace('-', ' ')}</span>
+        <div className={`product-gallery ${images.length > 1 ? 'has-thumbs' : ''}`}>
+          {/* Main photo, or a panel in the selected colour if this colour has no photos */}
+          <div className="product-media" style={{ background: selectedColour?.hex || 'var(--line)' }}>
+            {product.badge && <span className="badge">{product.badge}</span>}
+            {onSale && <span className="badge sale">Sale</span>}
+            {showImage ? (
+              <img
+                src={images[current]}
+                alt={`${product.name} in ${colour}, photo ${current + 1} of ${images.length}`}
+                onError={() => setHasImage(false)}
+              />
+            ) : (
+              <span className="card-placeholder">{product.category.replace('-', ' ')}</span>
+            )}
+          </div>
+
+          {images.length > 1 && (
+            <div className="thumbs">
+              {images.map((url, i) => (
+                <button
+                  key={`${url}-${i}`}
+                  className="thumb"
+                  aria-label={`Show photo ${i + 1}`}
+                  aria-pressed={i === current}
+                  onClick={() => showPhoto(i)}
+                >
+                  <img src={url} alt="" loading="lazy" />
+                </button>
+              ))}
+            </div>
           )}
         </div>
 
@@ -112,7 +160,7 @@ const ProductPage = () => {
                   style={{ background: c.hex }}
                   aria-label={c.name}
                   aria-pressed={c.name === colour}
-                  onClick={() => { setColour(c.name); setAdded(false); }}
+                  onClick={() => chooseColour(c.name)}
                 />
               ))}
             </div>

@@ -1,5 +1,12 @@
 import mongoose from 'mongoose';
 
+// One colour of a product, with its own photos
+const colourSchema = new mongoose.Schema({
+  name: { type: String, required: true, trim: true },
+  hex: { type: String, default: '#1a1c20' },
+  images: [String], // photos in this colour; the first one is the main photo
+});
+
 const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -12,8 +19,8 @@ const productSchema = new mongoose.Schema(
     ],
     price: { type: Number, required: true, min: 0 }, // LKR
     compareAtPrice: { type: Number, default: 0 },    // old price, for sale items
-    images: [String],
-    colours: [{ name: String, hex: String }],
+    images: [String], // main photos (the admin form copies the first colour's photos here)
+    colours: [colourSchema],
     sizes: [{ size: String, stock: { type: Number, default: 0, min: 0 } }],
     badge: { type: String, default: '' },             // 'New', 'Best seller'
     isFeatured: { type: Boolean, default: false },
