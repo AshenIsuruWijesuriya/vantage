@@ -48,7 +48,7 @@ export const createProduct = async (req, res) => {
 // PUT /api/products/:id (admin, connected in Step 6)
 export const updateProduct = async (req, res) => {
   const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
+        returnDocument: 'after',
     runValidators: true,
   });
   if (!product) {

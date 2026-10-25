@@ -98,12 +98,36 @@ export const getOrders = async (req, res) => {
 };
 
 // PUT /api/orders/:id/status (admin)  body: { status: 'Shipped' }
+const STATUSES = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+
+// PUT /api/orders/:id/status (admin)  body: { status: 'Shipped' }
 export const updateOrderStatus = async (req, res) => {
+  const status = req.body?.status;
+  if (!STATUSES.includes(status)) {
+    res.status(400);
+    throw new Error(`Status must be one of: ${STATUSES.join(', ')}`);
+  }
+
   const order = await Order.findById(req.params.id);
   if (!order) {
     res.status(404);
     throw new Error('Order not found');
   }
-  order.status = req.body?.status;
-  res.json(await order.save()); // the model rejects any status not in its list
+  if (order.status === 'Cancelled') {
+    res.status(400);
+    throw new Error('This order is cancelled and can no longer be changed');
+  }
+
+  // Cancelling puts the items back in stock
+  if (status === 'Cancelled') {
+    for (const item of order.items) {
+      await Product.updateOne(
+        { _id: item.product, 'sizes.size': item.size },
+        { $inc: { 'sizes.$.stock': item.qty } }
+      );
+    }
+  }
+
+  order.status = status;
+  res.json(await order.save());
 };
