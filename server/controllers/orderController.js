@@ -36,10 +36,11 @@ export const createOrder = async (req, res) => {
       res.status(400);
       throw new Error(`Only ${size.stock} left of ${product.name} in size ${i.size}`);
     }
+        const chosenColour = product.colours.find((c) => c.name === i.colour);
     return {
       product: product._id,
       name: product.name,
-      image: product.images[0],
+      image: chosenColour?.images?.[0] || product.images[0],
       price: product.price,
       colour: i.colour,
       size: i.size,
