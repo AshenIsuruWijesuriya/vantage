@@ -2,36 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import api, { errorMessage } from '../api/axios';
 import ProductCard from '../components/ProductCard';
-
-// What each collection shows. Accessories are stored with gender "unisex".
-const COLLECTIONS = {
-  women: {
-    title: "Women's",
-    intro: 'Squat-proof leggings, supportive bras and easy layers for training and rest days.',
-    apiGender: 'women',
-    categories: ['leggings', 'sports-bras', 'crop-tops', 'shorts'],
-  },
-  men: {
-    title: "Men's",
-    intro: 'Heavyweight tees, track pants and training shorts built for Colombo heat.',
-    apiGender: 'men',
-    categories: ['tees', 'joggers', 'shorts', 'tanks', 'jackets'],
-  },
-  accessories: {
-    title: 'Accessories',
-    intro: 'Bags, bottles and caps to finish the kit.',
-    apiGender: 'unisex',
-    categories: ['bags', 'bottles', 'caps'],
-  },
-};
+import { COLLECTIONS, categoryLabel as label } from '../utils/collections';
 
 const SORTS = [
   { value: 'newest', label: 'Newest' },
   { value: 'price-asc', label: 'Price: low to high' },
   { value: 'price-desc', label: 'Price: high to low' },
 ];
-
-const label = (slug) => slug.replace('-', ' ');
 
 const CollectionPage = () => {
   const { gender } = useParams();

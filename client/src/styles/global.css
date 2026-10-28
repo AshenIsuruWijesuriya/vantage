@@ -213,13 +213,3 @@ h1, h2, h3 {
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .auth-card { padding: 28px 20px; }
 }
-
-@media (max-width: 800px) {
-  .header-bar { grid-template-columns: 1fr auto; }
-  .main-nav { display: none; }
-  .logo { justify-self: start; }
-  .hero .wrap { grid-template-columns: 1fr; }
-  .site-footer .wrap { grid-template-columns: 1fr; }
-  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .auth-card { padding: 28px 20px; }
-}
