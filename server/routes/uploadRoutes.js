@@ -3,7 +3,7 @@ import multer from 'multer';
 import cloudinary from '../config/cloudinary.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 
-const MAX_FILES = 6;
+const MAX_FILES = 8; // matches the per-colour photo limit in the admin form
 
 // Keep files in memory just long enough to pass them to Cloudinary
 const upload = multer({

@@ -37,7 +37,7 @@ export const errorHandler = (err, req, res, next) => {
     status = 400;
     if (err.code === 'LIMIT_FILE_SIZE') message = 'Each image must be 5 MB or smaller';
     else if (err.code === 'LIMIT_FILE_COUNT' || err.code === 'LIMIT_UNEXPECTED_FILE') {
-      message = 'Upload up to 6 images at a time';
+      message = 'Upload up to 8 images at a time';
     }
   }
   if (err.code === 'INVALID_FILE_TYPE') status = 400;

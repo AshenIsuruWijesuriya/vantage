@@ -26,7 +26,11 @@ const AdminProducts = () => {
   const load = (pageNo) => {
     setLoading(true);
     api.get('/products', { params: { page: pageNo } })
-      .then(({ data }) => setData(data))
+      .then(({ data }) => {
+        // Deleted the last product on the last page? Step back a page.
+        if (data.products.length === 0 && pageNo > 1) setPage(pageNo - 1);
+        else setData(data);
+      })
       .catch((err) => setError(errorMessage(err)))
       .finally(() => setLoading(false));
   };

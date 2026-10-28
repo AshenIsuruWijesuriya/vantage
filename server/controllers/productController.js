@@ -11,7 +11,8 @@ export const getProducts = async (req, res) => {
   if (category) filter.category = category;
   if (activity) filter.activities = activity;
   if (featured === 'true') filter.isFeatured = true;
-  if (keyword) filter.name = { $regex: escapeRegex(keyword), $options: 'i' };
+  // A repeated ?keyword= arrives as an array, so only search plain text
+  if (typeof keyword === 'string' && keyword) filter.name = { $regex: escapeRegex(keyword), $options: 'i' };
 
   const sorts = {
     newest: { createdAt: -1 },
@@ -48,7 +49,7 @@ export const createProduct = async (req, res) => {
 // PUT /api/products/:id (admin, connected in Step 6)
 export const updateProduct = async (req, res) => {
   const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-        returnDocument: 'after',
+    returnDocument: 'after',
     runValidators: true,
   });
   if (!product) {

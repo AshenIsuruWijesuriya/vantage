@@ -339,7 +339,7 @@ const ProductForm = () => {
                     <strong>
                       {uploadingFor === ci ? 'Uploading…' : `+ Add photos for ${c.name || 'this colour'}`}
                     </strong>
-                    <span>JPG, PNG or WebP, up to 5 MB each</span>
+                    <span>JPG, PNG, WebP or AVIF, up to 5 MB each</span>
                   </label>
                 )}
               </div>

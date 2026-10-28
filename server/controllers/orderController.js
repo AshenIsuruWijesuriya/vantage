@@ -5,6 +5,16 @@ const FREE_DELIVERY = 15000;
 const DELIVERY_FEE = 450;
 const ADDRESS_FIELDS = ['fullName', 'phone', 'address', 'city', 'district'];
 
+// Put the stock for these order items back on the shelf
+const restock = async (items) => {
+  for (const item of items) {
+    await Product.updateOne(
+      { _id: item.product, 'sizes.size': item.size },
+      { $inc: { 'sizes.$.stock': item.qty } }
+    );
+  }
+};
+
 // POST /api/orders
 // body: { items: [{ productId, colour, size, qty }], shippingAddress: {...} }
 export const createOrder = async (req, res) => {
@@ -15,20 +25,26 @@ export const createOrder = async (req, res) => {
     res.status(400);
     throw new Error('Your bag is empty');
   }
-  const missing = ADDRESS_FIELDS.filter((f) => !shippingAddress?.[f]?.trim());
+  const missing = ADDRESS_FIELDS.filter((f) => {
+    const value = shippingAddress?.[f];
+    return typeof value !== 'string' || !value.trim();
+  });
   if (missing.length) {
     res.status(400);
     throw new Error(`Please fill in: ${missing.join(', ')}`);
   }
 
   // 2. Look up every product and use the DATABASE price, never the browser's
-  const products = await Product.find({ _id: { $in: items.map((i) => i.productId) } });
+  const products = await Product.find({ _id: { $in: items.map((i) => i?.productId) } });
 
   const orderItems = items.map((i) => {
-    const product = products.find((p) => p._id.equals(i.productId));
+    const product = products.find((p) => p._id.equals(i?.productId));
     const size = product?.sizes.find((s) => s.size === i.size);
-    const qty = Number(i.qty);
-    if (!product || !size || !Number.isInteger(qty) || qty < 1) {
+    const chosenColour = product?.colours.find((c) => c.name === i.colour);
+    const qty = Number(i?.qty);
+    // A product with colours must be ordered in one of them
+    const colourOk = product && (product.colours.length === 0 || chosenColour);
+    if (!product || !size || !colourOk || !Number.isInteger(qty) || qty < 1) {
       res.status(400);
       throw new Error('One of the items in your bag is no longer available');
     }
@@ -36,7 +52,6 @@ export const createOrder = async (req, res) => {
       res.status(400);
       throw new Error(`Only ${size.stock} left of ${product.name} in size ${i.size}`);
     }
-        const chosenColour = product.colours.find((c) => c.name === i.colour);
     return {
       product: product._id,
       name: product.name,
@@ -57,12 +72,7 @@ export const createOrder = async (req, res) => {
       { $inc: { 'sizes.$.stock': -item.qty } }
     );
     if (result.modifiedCount === 0) {
-      for (const r of reserved) {
-        await Product.updateOne(
-          { _id: r.product, 'sizes.size': r.size },
-          { $inc: { 'sizes.$.stock': r.qty } }
-        );
-      }
+      await restock(reserved);
       res.status(400);
       throw new Error(`${item.name} (${item.size}) just sold out`);
     }
@@ -73,16 +83,21 @@ export const createOrder = async (req, res) => {
   const itemsPrice = orderItems.reduce((sum, i) => sum + i.price * i.qty, 0);
   const shippingPrice = itemsPrice >= FREE_DELIVERY ? 0 : DELIVERY_FEE;
 
-  const order = await Order.create({
-    user: req.user._id,
-    items: orderItems,
-    shippingAddress,
-    itemsPrice,
-    shippingPrice,
-    totalPrice: itemsPrice + shippingPrice,
-  });
-
-  res.status(201).json(order);
+  try {
+    const order = await Order.create({
+      user: req.user._id,
+      items: orderItems,
+      shippingAddress,
+      itemsPrice,
+      shippingPrice,
+      totalPrice: itemsPrice + shippingPrice,
+    });
+    res.status(201).json(order);
+  } catch (error) {
+    // The order wasn't saved, so the stock taken in step 3 goes back
+    await restock(reserved);
+    throw error;
+  }
 };
 
 // GET /api/orders/mine
@@ -97,7 +112,6 @@ export const getOrders = async (req, res) => {
   res.json(orders);
 };
 
-// PUT /api/orders/:id/status (admin)  body: { status: 'Shipped' }
 const STATUSES = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
 
 // PUT /api/orders/:id/status (admin)  body: { status: 'Shipped' }
@@ -108,26 +122,22 @@ export const updateOrderStatus = async (req, res) => {
     throw new Error(`Status must be one of: ${STATUSES.join(', ')}`);
   }
 
-  const order = await Order.findById(req.params.id);
+  // Change the status in one step, and only if the order isn't already cancelled,
+  // so two requests at once can't both cancel it (and restock it twice)
+  const order = await Order.findOneAndUpdate(
+    { _id: req.params.id, status: { $ne: 'Cancelled' } },
+    { status },
+    { returnDocument: 'before' }
+  );
   if (!order) {
-    res.status(404);
-    throw new Error('Order not found');
-  }
-  if (order.status === 'Cancelled') {
-    res.status(400);
-    throw new Error('This order is cancelled and can no longer be changed');
+    const exists = await Order.exists({ _id: req.params.id });
+    res.status(exists ? 400 : 404);
+    throw new Error(exists ? 'This order is cancelled and can no longer be changed' : 'Order not found');
   }
 
   // Cancelling puts the items back in stock
-  if (status === 'Cancelled') {
-    for (const item of order.items) {
-      await Product.updateOne(
-        { _id: item.product, 'sizes.size': item.size },
-        { $inc: { 'sizes.$.stock': item.qty } }
-      );
-    }
-  }
+  if (status === 'Cancelled') await restock(order.items);
 
   order.status = status;
-  res.json(await order.save());
+  res.json(order);
 };

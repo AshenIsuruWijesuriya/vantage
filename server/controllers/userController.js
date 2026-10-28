@@ -12,7 +12,7 @@ const authResponse = (user) => ({
 // POST /api/users/register
 export const registerUser = async (req, res) => {
   const { name, email, password } = req.body || {};
-  if (!name || !email || !password) {
+  if (![name, email, password].every((v) => typeof v === 'string' && v)) {
     res.status(400);
     throw new Error('Name, email and password are required');
   }
@@ -27,7 +27,7 @@ export const registerUser = async (req, res) => {
 // POST /api/users/login
 export const loginUser = async (req, res) => {
   const { email, password } = req.body || {};
-  if (!email || !password) {
+  if (![email, password].every((v) => typeof v === 'string' && v)) {
     res.status(400);
     throw new Error('Enter your email and password');
   }

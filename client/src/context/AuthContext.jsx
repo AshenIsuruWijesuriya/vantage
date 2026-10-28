@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import api from '../api/axios';
 
 const AuthContext = createContext(null);
@@ -22,6 +22,19 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('vantage-user');
     setUser(null);
   };
+
+  // If the server rejects our token (e.g. it expired after 7 days), log out
+  // so the site stops showing a logged-in user whose requests all fail
+  useEffect(() => {
+    const id = api.interceptors.response.use(undefined, (err) => {
+      if (err.response?.status === 401 && err.config?.headers?.Authorization) {
+        localStorage.removeItem('vantage-user');
+        setUser(null);
+      }
+      return Promise.reject(err);
+    });
+    return () => api.interceptors.response.eject(id);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, register, logout }}>
