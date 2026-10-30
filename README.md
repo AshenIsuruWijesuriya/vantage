@@ -1,256 +1,216 @@
-# Vantage
+<div align="center">
 
-A MERN (MongoDB, Express, React, Node.js) storefront for **Vantage**, an active and lifestyle wear brand designed in Sri Lanka. Shoppers browse men's, women's and accessories collections, add items to a bag by colour and size, and place cash-on-delivery orders. Admins manage the catalogue (with photo uploads to Cloudinary) and move orders through their delivery stages. All prices are in Sri Lankan rupees (LKR).
+# VANTAGE
 
-## Contents
+**Active and lifestyle wear, designed in Sri Lanka.**
 
-- [Features](#features)
-- [Tech stack](#tech-stack)
-- [Project structure](#project-structure)
-- [Getting started](#getting-started)
-- [Scripts](#scripts)
-- [Client pages](#client-pages)
-- [API reference](#api-reference)
-- [How it works](#how-it-works)
-- [Data models](#data-models)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
-- [License](#license)
+A full-stack MERN storefront with a shopping bag, cash-on-delivery checkout and an admin area for products and orders.
+
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-20.19%2B-5FA04E?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose%209-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Cloudinary](https://img.shields.io/badge/Images-Cloudinary-3448C5?logo=cloudinary&logoColor=white)](https://cloudinary.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+[Features](#features) · [Quick start](#quick-start) · [API](#api-reference) · [How it works](#how-it-works) · [Roadmap](#roadmap)
+
+</div>
+
+---
+
+## About
+
+Vantage is an online shop for an activewear brand. Shoppers browse the Women's, Men's and Accessories collections, choose a colour and size, and pay the courier in cash when the order arrives. Admins add products with photos, keep stock up to date and move orders from *Pending* to *Delivered*. All prices are in Sri Lankan rupees (LKR).
+
+<!--
+## Screenshots
+
+Add images to docs/screenshots/ and uncomment this section.
+
+| Home | Product | Admin orders |
+| :--: | :-----: | :----------: |
+| ![Home page](docs/screenshots/home.png) | ![Product page](docs/screenshots/product.png) | ![Admin orders](docs/screenshots/admin-orders.png) |
+-->
 
 ## Features
 
-### For shoppers
+**Storefront**
 
-- **Home page** with a hero, a scrolling ticker, collection tiles and up to eight featured products (with loading skeletons and a "Try again" button if the request fails).
-- **Collections** for Women, Men and Accessories, with category filter chips, sorting (newest, price low to high, price high to low) and pagination. Filters live in the URL, so a filtered page can be bookmarked or shared.
-- **Product cards** with colour swatches; hovering or focusing a swatch switches the photo and the link opens the product in that colour.
-- **Product page** with a per-colour photo gallery and thumbnails, size buttons (sold-out sizes are disabled), a "Sale" badge with the old price struck through, and a low-stock note when five or fewer are left.
-- **Shopping bag** stored in `localStorage`, so it survives a refresh. Each colour and size combination is its own line, quantities can't go above the stock, and a progress bar shows how much more is needed for free delivery.
-- **Accounts**: register and log in with email and password. Login lasts 7 days, and the site logs the user out by itself if the token expires.
-- **Checkout** with Sri Lankan delivery details (all 25 districts and a 10-digit mobile number) and cash on delivery.
-- **Order history** showing each order's items, delivery address, totals and status, with a confirmation banner after placing an order.
+- 🏠 Home page with collection tiles and featured products
+- 🗂️ Collections with category filters, sorting and pagination, all kept in the URL
+- 🎨 Colour swatches that switch photos, plus a per-colour photo gallery
+- 📏 Size picker that disables sold-out sizes and warns when stock is low
+- 👜 Bag saved in the browser, with a progress bar towards free delivery
+- 🚚 Checkout for all 25 districts of Sri Lanka, with cash on delivery
+- 📦 Order history with status tracking
 
-### For admins
+**Admin**
 
-- **Products table** showing price, total stock, a stock status pill (In stock, Low, Sizes out, Sold out) and featured flag, with edit and delete (delete asks for confirmation).
-- **Product form** for creating and editing products: name with an auto-generated URL slug, description, gender, category, activities, price and "was" price, badge, featured flag, colours with a colour picker, size presets (Men S–XL, Women XS–L, One size) with stock per size, and up to 8 photos per colour uploaded to Cloudinary.
-- **Orders table** with status filter chips and counts, expandable order details, and a status dropdown (Pending, Processing, Shipped, Delivered, Cancelled). Cancelling an order puts its items back in stock, and a cancelled order can't be changed again.
+- 🧾 Product table with stock status at a glance
+- ✏️ Product form with colours, size presets, stock per size and up to 8 photos per colour (uploaded to Cloudinary)
+- 🔄 Orders table with status filters; cancelling an order puts the stock back
 
-### On the server
+**Under the hood**
 
-- Prices and totals are always worked out from the database, never trusted from the browser.
-- Stock is reserved atomically per size when an order is placed, and rolled back if any item fails.
-- Passwords are hashed with bcrypt and never returned by default.
-- Clear JSON error messages for bad IDs, failed validation, duplicate emails or slugs, invalid JSON and upload problems.
+- 🔐 JWT login with bcrypt-hashed passwords and admin-only routes
+- 💰 Prices and totals are always worked out on the server
+- 🧮 Stock is reserved safely, so two shoppers can't buy the last item twice
 
 ## Tech stack
 
 | Layer    | Tools |
 | -------- | ----- |
 | Client   | React 19, Vite 8, React Router 7, Axios, plain CSS, Oxlint |
-| Server   | Node.js, Express 5 (ES modules), Mongoose 9, JSON Web Tokens, bcryptjs, Multer, Cloudinary SDK, Morgan, CORS, dotenv |
-| Database | MongoDB (MongoDB Atlas recommended) |
+| Server   | Node.js, Express 5 (ES modules), Mongoose 9, JSON Web Tokens, bcryptjs, Multer, Morgan, CORS, dotenv |
+| Database | MongoDB (Atlas recommended) |
 | Images   | Cloudinary |
-| Tooling  | `concurrently` (runs client and server together), `nodemon` |
+| Tooling  | `concurrently`, `nodemon` |
+
+## Quick start
+
+**You'll need:** Node.js 20.19+ or 22.12+, a MongoDB database ([Atlas](https://www.mongodb.com/atlas) free tier works), and a [Cloudinary](https://cloudinary.com/) account if you want to upload product photos.
+
+```bash
+# 1. Clone
+git clone https://github.com/AshenIsuruWijesuriya/vantage.git
+cd vantage
+
+# 2. Install (root, server and client)
+npm install
+npm install --prefix server
+npm install --prefix client
+
+# 3. Configure, then edit server/.env with your own values
+cp server/.env.example server/.env
+
+# 4. Load sample data (wipes the database first)
+npm run seed --prefix server
+
+# 5. Run the API and the client together
+npm run dev
+```
+
+Open **http://localhost:5173**. The API runs at http://localhost:5000 (health check: `/api/health`).
+
+> [!WARNING]
+> `npm run seed` deletes **all** orders, products and users before importing the sample data.
+
+### Demo accounts
+
+Seeding adds 13 sample products and these accounts:
+
+| Role     | Email                 | Password                        |
+| -------- | --------------------- | ------------------------------- |
+| Admin    | `admin@vantage.lk`    | `ADMIN_PASSWORD` from `.env`    |
+| Customer | `customer@vantage.lk` | `CUSTOMER_PASSWORD` from `.env` |
+
+Log in as the admin and click **Admin** in the header to manage products and orders.
+
+> [!NOTE]
+> The sample products point at photo paths that aren't in the repository, so they show a panel in the product's colour until you upload photos from the admin product form.
+
+<details>
+<summary><strong>Environment variables</strong> (<code>server/.env</code>)</summary>
+
+<br>
+
+| Variable                | Description |
+| ----------------------- | ----------- |
+| `PORT`                  | Port the API listens on, e.g. `5000` |
+| `MONGO_URI`             | MongoDB connection string |
+| `JWT_SECRET`            | Long random string used to sign login tokens |
+| `CLIENT_URL`            | Origin allowed by CORS, e.g. `http://localhost:5173` |
+| `NODE_ENV`              | `development` turns on request logging; anything except `production` adds stack traces to errors |
+| `ADMIN_PASSWORD`        | Seeded admin's password (8+ characters) |
+| `CUSTOMER_PASSWORD`     | Seeded customer's password (8+ characters) |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY`    | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret |
+
+`.env` files are git-ignored. Never commit real credentials.
+
+The client needs no `.env` in development because Vite forwards `/api` to `http://localhost:5000`. For a production build that talks to a different API, set `VITE_API_URL` (e.g. `https://api.example.com/api`).
+
+</details>
+
+<details>
+<summary><strong>All scripts</strong></summary>
+
+<br>
+
+| Where  | Command                | What it does |
+| ------ | ---------------------- | ------------ |
+| root   | `npm run dev`          | Run the server and client together |
+| root   | `npm run dev:server`   | Run only the server |
+| root   | `npm run dev:client`   | Run only the client |
+| server | `npm run dev`          | Start the API with `nodemon` |
+| server | `npm start`            | Start the API with Node |
+| server | `npm run seed`         | Replace all data with the sample products and users |
+| server | `npm run seed:destroy` | Delete all orders, products and users |
+| client | `npm run dev`          | Start the Vite dev server |
+| client | `npm run build`        | Build for production into `client/dist` |
+| client | `npm run preview`      | Preview the production build |
+| client | `npm run lint`         | Lint with Oxlint |
+
+</details>
 
 ## Project structure
 
 ```
 vantage/
-├── client/                          # React + Vite frontend
-│   ├── public/                      # Favicon and static icons
-│   ├── src/
-│   │   ├── api/axios.js             # Axios instance; attaches the login token
-│   │   ├── components/              # Header, Footer, AnnouncementBar, ProductCard,
-│   │   │                            # ProtectedRoute, AdminRoute, AdminNav
-│   │   ├── context/
-│   │   │   ├── AuthContext.jsx      # Logged-in user, login/register/logout
-│   │   │   └── CartContext.jsx      # Bag contents, totals, delivery fee
-│   │   ├── pages/                   # Home, Collection, Product, Cart, Checkout,
-│   │   │   │                        # Orders, Login, Register, ComingSoon (404)
-│   │   │   └── admin/               # AdminProducts, ProductForm, AdminOrders
-│   │   ├── styles/                  # global, home, product, cart, checkout, orders, admin
-│   │   ├── utils/
-│   │   │   ├── collections.js       # What each collection shows
-│   │   │   └── format.js            # LKR price formatting
-│   │   ├── App.jsx                  # Routes
-│   │   └── main.jsx                 # Entry point and providers
-│   └── vite.config.js               # Proxies /api to the server in development
-├── server/                          # Express REST API
-│   ├── config/
-│   │   ├── db.js                    # MongoDB connection
-│   │   └── cloudinary.js            # Cloudinary setup
-│   ├── controllers/                 # product, user and order handlers
-│   ├── data/                        # Seed products and users
-│   ├── middleware/
-│   │   ├── authMiddleware.js        # protect (logged in) and admin
-│   │   └── errorMiddleware.js       # 404 and error responses
-│   ├── models/                      # Product, User, Order schemas
-│   ├── routes/                      # products, users, orders, upload
-│   ├── utils/generateToken.js       # Signs 7-day JWTs
-│   ├── seeder.js                    # Imports or clears sample data
-│   ├── .env.example                 # Environment variable template
-│   └── server.js                    # App entry point
-└── package.json                     # Root scripts to run client and server together
+├── client/                  React + Vite storefront and admin area (see client/README.md)
+│   └── src/
+│       ├── api/             Axios instance that attaches the login token
+│       ├── components/      Header, footer, product card, route guards
+│       ├── context/         Auth and cart state
+│       ├── pages/           Storefront pages, plus admin/ for the admin area
+│       ├── styles/          Plain CSS, one file per area
+│       └── utils/           Collection settings and LKR formatting
+├── server/                  Express REST API
+│   ├── config/              MongoDB and Cloudinary setup
+│   ├── controllers/         Product, user and order handlers
+│   ├── data/                Seed products and users
+│   ├── middleware/          Auth guards and error handling
+│   ├── models/              Product, User and Order schemas
+│   ├── routes/              products, users, orders, upload
+│   ├── seeder.js            Imports or clears sample data
+│   └── server.js            App entry point
+└── package.json             Root scripts that run both apps
 ```
-
-## Getting started
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) 20.19+ or 22.12+ (required by Vite)
-- npm
-- A MongoDB database, either a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster or a local MongoDB instance
-- A free [Cloudinary](https://cloudinary.com/) account, needed only for uploading product photos from the admin area
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/AshenIsuruWijesuriya/vantage.git
-cd vantage
-```
-
-### 2. Install dependencies
-
-The root, server and client each have their own `package.json`:
-
-```bash
-npm install
-npm install --prefix server
-npm install --prefix client
-```
-
-### 3. Configure environment variables
-
-Copy the template and fill in your own values:
-
-```bash
-cp server/.env.example server/.env
-```
-
-| Variable                | Description | Example |
-| ----------------------- | ----------- | ------- |
-| `PORT`                  | Port the API listens on | `5000` |
-| `MONGO_URI`             | MongoDB connection string | `mongodb+srv://user:pass@cluster.mongodb.net/vantage` |
-| `JWT_SECRET`            | Secret used to sign login tokens; use a long random string | `a_long_random_string` |
-| `CLIENT_URL`            | Origin allowed by CORS | `http://localhost:5173` |
-| `NODE_ENV`              | `development` turns on request logging; any value other than `production` includes error stack traces | `development` |
-| `ADMIN_PASSWORD`        | Password for the seeded admin account (8+ characters) | |
-| `CUSTOMER_PASSWORD`     | Password for the seeded customer account (8+ characters) | |
-| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name | |
-| `CLOUDINARY_API_KEY`    | Cloudinary API key | |
-| `CLOUDINARY_API_SECRET` | Cloudinary API secret | |
-
-`.env` files are git-ignored. Never commit real credentials.
-
-The client needs no `.env` in development: Vite forwards `/api` requests to `http://localhost:5000`. To point a production build at a different API, set `VITE_API_URL` (for example `https://api.example.com/api`) when building the client.
-
-### 4. Seed the database
-
-```bash
-npm run seed --prefix server
-```
-
-> **Warning:** seeding first deletes **all** orders, products and users in the database, then imports the sample data.
-
-This adds 13 sample products (6 men's, 4 women's, 3 accessories) and two accounts:
-
-| Account  | Email                 | Password                         |
-| -------- | --------------------- | -------------------------------- |
-| Admin    | `admin@vantage.lk`    | `ADMIN_PASSWORD` from `.env`     |
-| Customer | `customer@vantage.lk` | `CUSTOMER_PASSWORD` from `.env`  |
-
-The sample products point at photo paths (`/images/products/...`) that aren't in the repository, so they show a panel in the product's colour until you upload real photos from the admin product form.
-
-To clear everything without importing, run `npm run seed:destroy --prefix server`.
-
-### 5. Run the app
-
-From the project root:
-
-```bash
-npm run dev
-```
-
-This starts both apps:
-
-- API at http://localhost:5000 (check http://localhost:5000/api/health)
-- Client at http://localhost:5173
-
-Log in as the admin and use the **Admin** link in the header to manage products and orders.
-
-## Scripts
-
-**Root**
-
-| Command              | Description |
-| -------------------- | ----------- |
-| `npm run dev`        | Run server and client together |
-| `npm run dev:server` | Run only the server |
-| `npm run dev:client` | Run only the client |
-
-**Server** (`cd server`)
-
-| Command                | Description |
-| ---------------------- | ----------- |
-| `npm run dev`          | Start the API with `nodemon` (restarts on changes) |
-| `npm start`            | Start the API with Node |
-| `npm run seed`         | Replace all data with the sample products and users |
-| `npm run seed:destroy` | Delete all orders, products and users |
-
-**Client** (`cd client`)
-
-| Command           | Description |
-| ----------------- | ----------- |
-| `npm run dev`     | Start the Vite dev server |
-| `npm run build`   | Build for production into `client/dist` |
-| `npm run preview` | Preview the production build |
-| `npm run lint`    | Lint with Oxlint |
-
-## Client pages
-
-| Path                          | Page | Access |
-| ----------------------------- | ---- | ------ |
-| `/`                           | Home | Public |
-| `/collections/:gender`        | Collection (`women`, `men` or `accessories`); supports `?category=`, `?sort=` and `?page=` | Public |
-| `/products/:slug`             | Product detail; `?colour=` picks the starting colour | Public |
-| `/cart`                       | Shopping bag | Public |
-| `/login`, `/register`         | Log in, create an account | Public |
-| `/checkout`                   | Delivery details and place order | Logged in |
-| `/orders`                     | My orders | Logged in |
-| `/admin`, `/admin/products`   | Product list | Admin |
-| `/admin/products/new`         | Add a product | Admin |
-| `/admin/products/:slug/edit`  | Edit a product | Admin |
-| `/admin/orders`               | All orders | Admin |
-| any other path                | "Page not found" | Public |
-
-Visitors who aren't logged in are sent to `/login` and returned to the page they wanted afterwards. Logged-in customers who open an admin page are sent home.
 
 ## API reference
 
-Base URL: `http://localhost:5000/api`
-
-Protected endpoints need the token returned by register or login in an `Authorization` header:
+Base URL: `http://localhost:5000/api`. Protected endpoints need the token from register or login:
 
 ```
 Authorization: Bearer <token>
 ```
 
-### Health
+| Method | Endpoint             | Access    | Description |
+| ------ | -------------------- | --------- | ----------- |
+| GET    | `/health`            | Public    | Returns `{ "status": "ok" }` |
+| POST   | `/users/register`    | Public    | Create an account |
+| POST   | `/users/login`       | Public    | Log in |
+| GET    | `/users/me`          | Logged in | The current user |
+| GET    | `/products`          | Public    | List products (filters, sorting, pages) |
+| GET    | `/products/:slug`    | Public    | One product by slug |
+| POST   | `/products`          | Admin     | Create a product |
+| PUT    | `/products/:id`      | Admin     | Update a product |
+| DELETE | `/products/:id`      | Admin     | Delete a product |
+| POST   | `/orders`            | Logged in | Place an order |
+| GET    | `/orders/mine`       | Logged in | The current user's orders |
+| GET    | `/orders`            | Admin     | All orders |
+| PUT    | `/orders/:id/status` | Admin     | Change an order's status |
+| POST   | `/upload`            | Admin     | Upload product photos to Cloudinary |
 
-| Method | Endpoint  | Description |
-| ------ | --------- | ----------- |
-| GET    | `/health` | Returns `{ "status": "ok" }` |
+<details>
+<summary><strong>Users</strong>: register and login</summary>
 
-### Users
+<br>
 
-| Method | Endpoint          | Access    | Description |
-| ------ | ----------------- | --------- | ----------- |
-| POST   | `/users/register` | Public    | Create an account. Body: `{ name, email, password }` |
-| POST   | `/users/login`    | Public    | Log in. Body: `{ email, password }` |
-| GET    | `/users/me`       | Logged in | The current user |
-
-Register and login both return:
+`POST /users/register` takes `{ name, email, password }` and `POST /users/login` takes `{ email, password }`. Both return the user and a token:
 
 ```json
 {
@@ -262,57 +222,43 @@ Register and login both return:
 }
 ```
 
-Tokens expire after 7 days. Passwords must be at least 8 characters, and emails are stored in lowercase.
+Tokens last 7 days. Passwords need at least 8 characters, and emails are stored in lowercase.
 
-### Products
+</details>
 
-| Method | Endpoint          | Access | Description |
-| ------ | ----------------- | ------ | ----------- |
-| GET    | `/products`       | Public | List products with filters, sorting and pagination |
-| GET    | `/products/:slug` | Public | Get one product by its slug |
-| POST   | `/products`       | Admin  | Create a product (body follows the [Product model](#data-models)) |
-| PUT    | `/products/:id`   | Admin  | Update a product by its ID |
-| DELETE | `/products/:id`   | Admin  | Delete a product by its ID |
+<details>
+<summary><strong>Products</strong>: <code>GET /products</code> query parameters</summary>
 
-#### `GET /products` query parameters
+<br>
 
 All parameters are optional.
 
 | Parameter  | Values | Notes |
 | ---------- | ------ | ----- |
-| `gender`   | `men`, `women`, `unisex` | Unisex products are always included, so `men` returns men's and unisex products |
+| `gender`   | `men`, `women`, `unisex` | Unisex products are always included |
 | `category` | `tees`, `tanks`, `joggers`, `shorts`, `jackets`, `leggings`, `sports-bras`, `crop-tops`, `bags`, `bottles`, `caps` | Exact match |
 | `activity` | `lifting`, `running`, `rest-day`, `casual`, `pilates-yoga` | |
-| `featured` | `true` | Only featured products |
-| `keyword`  | any text | Case-insensitive search on product name |
+| `featured` | `true` | Featured products only |
+| `keyword`  | any text | Case-insensitive search on the name |
 | `sort`     | `newest` (default), `price-asc`, `price-desc` | |
-| `page`     | number, default `1` | 12 products per page |
-
-Example:
+| `page`     | number, default `1` | 12 per page |
 
 ```
-GET /api/products?gender=women&category=leggings&activity=running&sort=price-asc&page=1
+GET /api/products?gender=women&category=leggings&sort=price-asc&page=1
 ```
-
-Response:
 
 ```json
-{
-  "products": [ /* ... */ ],
-  "page": 1,
-  "pages": 3,
-  "count": 30
-}
+{ "products": [ /* ... */ ], "page": 1, "pages": 3, "count": 30 }
 ```
 
-### Orders
+`POST` and `PUT` take a body shaped like the [Product model](#data-models).
 
-| Method | Endpoint             | Access    | Description |
-| ------ | -------------------- | --------- | ----------- |
-| POST   | `/orders`            | Logged in | Place an order |
-| GET    | `/orders/mine`       | Logged in | The current user's orders, newest first |
-| GET    | `/orders`            | Admin     | All orders with the customer's name and email, newest first |
-| PUT    | `/orders/:id/status` | Admin     | Change an order's status. Body: `{ "status": "Shipped" }` |
+</details>
+
+<details>
+<summary><strong>Orders</strong>: placing an order and changing its status</summary>
+
+<br>
 
 `POST /orders` body:
 
@@ -331,27 +277,31 @@ Response:
 }
 ```
 
-The server fills in each item's name, photo and price, works out the totals, and returns the saved order with status `Pending`.
+The server fills in each item's name, photo and price, works out the totals and returns the saved order with status `Pending`.
 
-### Upload
+`PUT /orders/:id/status` takes `{ "status": "Shipped" }`. Allowed values: `Pending`, `Processing`, `Shipped`, `Delivered`, `Cancelled`.
 
-| Method | Endpoint  | Access | Description |
-| ------ | --------- | ------ | ----------- |
-| POST   | `/upload` | Admin  | Upload product photos to Cloudinary |
+</details>
 
-Send `multipart/form-data` with the files in a field named `images`. Up to 8 files per request, 5 MB each, in JPG, PNG, WebP or AVIF format. Photos wider than 1600px are scaled down and stored in the `vantage/products` folder. Response:
+<details>
+<summary><strong>Upload</strong>: product photos</summary>
+
+<br>
+
+Send `multipart/form-data` with the files in a field named `images`: up to 8 files, 5 MB each, in JPG, PNG, WebP or AVIF format. Photos wider than 1600px are scaled down and stored in the `vantage/products` Cloudinary folder.
 
 ```json
 { "urls": ["https://res.cloudinary.com/..."] }
 ```
 
-### Errors
+</details>
 
-Errors return JSON with a matching HTTP status code:
+<details>
+<summary><strong>Errors</strong></summary>
 
-```json
-{ "message": "Product not found" }
-```
+<br>
+
+Errors return JSON with a matching status code, e.g. `{ "message": "Product not found" }`.
 
 | Situation | Status |
 | --------- | ------ |
@@ -361,38 +311,61 @@ Errors return JSON with a matching HTTP status code:
 | Unknown route, or an ID that isn't valid | `404` |
 | Anything else | `500` |
 
-When `NODE_ENV` is not `production`, the response also includes a `stack` field.
+Outside `production`, responses also include a `stack` field.
+
+</details>
 
 ## How it works
 
-### Authentication
+<details>
+<summary><strong>Login and admin access</strong></summary>
 
-On register or login the server returns a JWT signed with `JWT_SECRET`. The client saves the user and token in `localStorage` (`vantage-user`), and an Axios interceptor adds the token to every request. On the server, `protect` checks the token and loads the user, and `admin` allows only users with `isAdmin: true`. If any request comes back `401`, the client logs the user out.
+<br>
 
-### Delivery and pricing
+Register and login return a JWT signed with `JWT_SECRET`. The client keeps the user in `localStorage` and an Axios interceptor adds the token to every request. On the server, `protect` checks the token and `admin` allows only users with `isAdmin: true`. If a request comes back `401`, for example because the token has expired, the client logs the user out.
 
-- Delivery costs **LKR 450**, or is **free for orders of LKR 15,000 or more**. The same rule is used in the bag, at checkout and on the server, and the server's figure is the one saved.
-- Payment is cash on delivery only.
+In the browser, logged-out visitors are sent to the login page and brought back afterwards, and customers who open an admin page are sent home. The server checks admin rights on every request either way.
+
+</details>
+
+<details>
+<summary><strong>Delivery and pricing</strong></summary>
+
+<br>
+
+- Delivery is **LKR 450**, or **free from LKR 15,000**. The bag, checkout and server all use the same rule, and the server's figure is the one saved.
+- Payment is cash on delivery.
 - A product is on sale when its `compareAtPrice` is higher than its `price`.
 
-### Placing an order
+</details>
+
+<details>
+<summary><strong>Placing an order</strong></summary>
+
+<br>
 
 1. The server checks that the bag isn't empty and every address field is filled in.
-2. It loads each product from the database, checks that the colour and size exist and that the quantity is a whole number in stock, and takes the **database** price.
-3. It reduces the stock one item at a time, but only if enough is still left. If one item has just sold out, the stock already taken is put back and the order is rejected.
-4. It works out the subtotal, delivery and total, then saves the order. If saving fails, the stock is put back.
+2. It loads each product, checks the colour, size and quantity, and uses the **database** price.
+3. It takes the stock one item at a time, only if enough is left. If an item has just sold out, the stock already taken goes back and the order is rejected.
+4. It works out the totals and saves the order. If saving fails, the stock goes back.
 
-### Order status and cancellations
+</details>
 
-Status changes are made in a single database step that skips orders that are already cancelled. This means two cancel requests at the same time can't both restock the items. Cancelling an order puts its items back in stock, and a cancelled order can't be changed again.
+<details>
+<summary><strong>Cancelling an order</strong></summary>
 
-### Product photos
+<br>
 
-Each colour has its own list of photos; the first is the main photo. When an admin saves a product, the photos of the first colour that has any are also copied to the product's `images` field. If a colour has no photos, or a photo fails to load, the site shows a panel in that colour with the category name.
+A status change happens in one database step that skips orders that are already cancelled, so two cancel requests at once can't restock the items twice. Cancelling puts the items back in stock, and a cancelled order can't be changed again.
 
-### Collections
+</details>
 
-The client maps each collection to an API gender and a set of categories (see [client/src/utils/collections.js](client/src/utils/collections.js)):
+<details>
+<summary><strong>Collections and photos</strong></summary>
+
+<br>
+
+Each collection maps to an API gender and a set of categories ([client/src/utils/collections.js](client/src/utils/collections.js)):
 
 | Collection  | API gender | Categories |
 | ----------- | ---------- | ---------- |
@@ -400,23 +373,32 @@ The client maps each collection to an API gender and a set of categories (see [c
 | Men's       | `men`      | tees, joggers, shorts, tanks, jackets |
 | Accessories | `unisex`   | bags, bottles, caps |
 
+Each colour has its own photos, and the first one is the main photo. When an admin saves a product, the photos of the first colour that has any are copied to the product's `images` field. If a colour has no photos, or a photo fails to load, the site shows a panel in that colour instead.
+
+</details>
+
 ## Data models
 
-All models include `createdAt` and `updatedAt` timestamps.
+<details>
+<summary><strong>Product, User and Order</strong></summary>
+
+<br>
+
+All models have `createdAt` and `updatedAt` timestamps.
 
 **Product**
 
 | Field            | Type | Notes |
 | ---------------- | ---- | ----- |
 | `name`           | String | Required |
-| `slug`           | String | Required, unique, lowercase; used in product URLs |
+| `slug`           | String | Required, unique, lowercase; used in URLs |
 | `description`    | String | |
 | `gender`         | String | `men`, `women` or `unisex`; required |
 | `category`       | String | Required, e.g. `tees`, `leggings`, `bags` |
 | `activities`     | [String] | `lifting`, `running`, `rest-day`, `casual`, `pilates-yoga` |
 | `price`          | Number | LKR, required, 0 or more |
 | `compareAtPrice` | Number | Old price for sale items; default `0` |
-| `images`         | [String] | Main photos (copied from the first colour with photos) |
+| `images`         | [String] | Main photos |
 | `colours`        | [{ `name`, `hex`, `images[]` }] | Each colour has its own photos |
 | `sizes`          | [{ `size`, `stock` }] | Stock can't go below 0 |
 | `badge`          | String | e.g. "New", "Best seller" |
@@ -428,7 +410,7 @@ All models include `createdAt` and `updatedAt` timestamps.
 | ---------- | ---- | ----- |
 | `name`     | String | Required |
 | `email`    | String | Required, unique, lowercase |
-| `password` | String | Required, 8+ characters, hashed with bcrypt, left out of queries by default |
+| `password` | String | Required, 8+ characters, bcrypt-hashed, hidden from queries by default |
 | `isAdmin`  | Boolean | Default `false` |
 
 **Order**
@@ -436,7 +418,7 @@ All models include `createdAt` and `updatedAt` timestamps.
 | Field             | Type | Notes |
 | ----------------- | ---- | ----- |
 | `user`            | ObjectId → User | Required |
-| `items`           | [{ `product`, `name`, `image`, `price`, `colour`, `size`, `qty` }] | A copy of each item as it was when ordered |
+| `items`           | [{ `product`, `name`, `image`, `price`, `colour`, `size`, `qty` }] | A copy of each item at the time of ordering |
 | `shippingAddress` | { `fullName`, `phone`, `address`, `city`, `district` } | All required |
 | `paymentMethod`   | String | Default "Cash on delivery" |
 | `itemsPrice`      | Number | Subtotal |
@@ -444,27 +426,24 @@ All models include `createdAt` and `updatedAt` timestamps.
 | `totalPrice`      | Number | Subtotal plus delivery |
 | `status`          | String | `Pending` (default), `Processing`, `Shipped`, `Delivered`, `Cancelled` |
 
+</details>
+
 ## Roadmap
 
-- [x] Project setup: Vite React client, Express server, root dev script
-- [x] Express server, MongoDB connection and error handling
-- [x] Product, User and Order models
-- [x] Public product API (list and detail)
-- [x] Database seeder with sample products
-- [x] User registration and login with JWT
-- [x] Admin product management (create, update, delete) with Cloudinary photo uploads
+- [x] Express API, MongoDB models and error handling
+- [x] Product API with filters, sorting and pagination
+- [x] Sample data seeder
+- [x] Registration and login with JWT
+- [x] Storefront: home, collections, product page, bag and checkout
 - [x] Order placement and order history
-- [x] Storefront UI: home, collections, product detail, bag and checkout
-- [x] Admin area: products and orders
+- [x] Admin area: products (with Cloudinary uploads) and orders
 - [ ] Search box in the storefront (the API already supports `keyword`)
-- [ ] Help pages (returns and exchanges, shipping, contact); the footer links are placeholders for now
+- [ ] Help pages: returns and exchanges, shipping, contact
 - [ ] Deployment
 
 ## Contributing
 
 Work happens on feature branches named `feature/<step>-<topic>` and is merged into `main` through pull requests. Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/), for example `feat(server): add product controller`.
-
-Before opening a pull request, run `npm run lint --prefix client` and check that `npm run build --prefix client` succeeds.
 
 ## License
 
