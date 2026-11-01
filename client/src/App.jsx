@@ -15,6 +15,7 @@ import RegisterPage from './pages/RegisterPage';
 import AdminProducts from './pages/admin/AdminProducts';
 import ProductForm from './pages/admin/ProductForm';
 import AdminOrders from './pages/admin/AdminOrders';
+import AdminHero from './pages/admin/AdminHero';
 import ComingSoon from './pages/ComingSoon';
 
 // The parts every page shares; <Outlet /> is where each page appears
@@ -50,6 +51,7 @@ const App = () => (
         <Route path="/admin/products/new" element={<ProductForm key="new" />} />
         <Route path="/admin/products/:slug/edit" element={<ProductForm key="edit" />} />
         <Route path="/admin/orders" element={<AdminOrders />} />
+        <Route path="/admin/hero" element={<AdminHero />} />
       </Route>
 
       <Route path="*" element={<ComingSoon title="Page not found" />} />

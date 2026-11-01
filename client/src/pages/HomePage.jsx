@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api, { errorMessage } from '../api/axios';
 import ProductCard from '../components/ProductCard';
+import HeroSlider from '../components/HeroSlider';
 import { FREE_DELIVERY } from '../context/CartContext';
 import { COLLECTIONS, categoryLabel } from '../utils/collections';
 import { formatLKR } from '../utils/format';
@@ -49,21 +50,24 @@ const HomePage = () => {
 
   return (
     <>
-      <section className="hero">
-        <div className="wrap">
-          <div>
-            <p className="eyebrow">FW26 · Drop 02 · Out now</p>
-            <h1>Earn your<br /><span className="out">Vantage</span></h1>
-          </div>
-          <div>
-            <p>Performance and lifestyle wear cut for Colombo heat. Train hard, recover easy, wear it out after.</p>
-            <div className="ctas">
-              <Link className="btn solid" to="/collections/men">Shop Men</Link>
-              <Link className="btn ghost" to="/collections/women">Shop Women</Link>
+      {/* Admin-managed photo slideshow. With no active slides, the hero inside is shown instead. */}
+      <HeroSlider>
+        <section className="hero">
+          <div className="wrap">
+            <div>
+              <p className="eyebrow">FW26 · Drop 02 · Out now</p>
+              <h1>Earn your<br /><span className="out">Vantage</span></h1>
+            </div>
+            <div>
+              <p>Performance and lifestyle wear cut for Colombo heat. Train hard, recover easy, wear it out after.</p>
+              <div className="ctas">
+                <Link className="btn solid" to="/collections/men">Shop Men</Link>
+                <Link className="btn ghost" to="/collections/women">Shop Women</Link>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </HeroSlider>
 
       {/* Decorative scrolling strip; the words repeat so the loop is seamless */}
       <div className="ticker" aria-hidden="true">
