@@ -152,3 +152,46 @@
 .order-details ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
 .order-details p { margin: 0; color: var(--muted); line-height: 1.5; }
 @media (max-width: 760px) { .order-details { grid-template-columns: 1fr; } }
+
+/* Hero slides admin */
+.hero-preview {
+  position: relative; aspect-ratio: 2 / 1; overflow: hidden;
+  background: var(--band) center / cover no-repeat;
+  display: flex; align-items: flex-end; padding: 20px;
+}
+.hero-preview::before {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(13, 15, 18, 0.85), rgba(13, 15, 18, 0.2) 70%, transparent);
+}
+.hero-preview-text { position: relative; display: grid; gap: 6px; max-width: 60%; color: var(--band-ink); }
+.hero-preview-text .eyebrow { color: rgba(243, 243, 240, 0.8); }
+.hero-preview-text strong {
+  font-family: var(--display); font-weight: 900; text-transform: uppercase;
+  font-size: clamp(24px, 4vw, 44px); line-height: 0.9;
+}
+.hero-preview-text span { font-size: 14px; }
+.hero-preview-btn {
+  justify-self: start; margin-top: 4px; padding: 6px 12px; background: var(--band-ink); color: var(--band);
+  font-family: var(--label); font-weight: 700; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+}
+.hero-preview-empty {
+  position: absolute; top: 16px; right: 16px; color: var(--band-muted); font-size: 13px;
+}
+
+.slides-title { font-size: 32px; font-weight: 900; margin: 40px 0 16px; }
+.slide-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; max-width: 880px; }
+.slide-row {
+  display: grid; grid-template-columns: 160px minmax(0, 1fr) auto; gap: 16px; align-items: center;
+  padding: 12px; background: var(--surface); border: 1px solid var(--line);
+}
+.slide-row.is-hidden { opacity: 0.6; }
+.slide-thumb { width: 160px; aspect-ratio: 2 / 1; object-fit: cover; background: var(--line); }
+.slide-info { display: grid; gap: 4px; min-width: 0; font-size: 14px; }
+.slide-info .pill { justify-self: start; }
+.text-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+@media (max-width: 700px) {
+  .slide-row { grid-template-columns: 100px minmax(0, 1fr); }
+  .slide-thumb { width: 100px; }
+  .slide-row .row-actions { grid-column: 1 / -1; justify-content: flex-start; flex-wrap: wrap; }
+}

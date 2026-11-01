@@ -5,6 +5,7 @@ const AdminNav = () => (
   <nav className="admin-nav" aria-label="Admin">
     <NavLink to="/admin/products">Products</NavLink>
     <NavLink to="/admin/orders">Orders</NavLink>
+    <NavLink to="/admin/hero">Hero slides</NavLink>
   </nav>
 );
 
