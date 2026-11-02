@@ -4,13 +4,13 @@ export const COLLECTIONS = {
     title: "Women's",
     intro: 'Squat-proof leggings, supportive bras and easy layers for training and rest days.',
     apiGender: 'women',
-    categories: ['leggings', 'sports-bras', 'crop-tops', 'shorts'],
+    categories: ['leggings', 'sports-bras', 'crop-tops', 'tanks', 'shorts', 'skirts', 'joggers', 'hoodies'],
   },
   men: {
     title: "Men's",
     intro: 'Heavyweight tees, track pants and training shorts built for Colombo heat.',
     apiGender: 'men',
-    categories: ['tees', 'joggers', 'shorts', 'tanks', 'jackets'],
+    categories: ['tees', 'polos', 'tanks', 'compression', 'shorts', 'joggers', 'hoodies', 'jackets'],
   },
   accessories: {
     title: 'Accessories',

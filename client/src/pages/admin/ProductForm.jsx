@@ -6,8 +6,8 @@ import '../../styles/admin.css';
 
 const ACTIVITIES = ['lifting', 'running', 'rest-day', 'casual', 'pilates-yoga'];
 const CATEGORIES = [
-  'tees', 'tanks', 'joggers', 'shorts', 'jackets',
-  'leggings', 'sports-bras', 'crop-tops', 'bags', 'bottles', 'caps',
+  'tees', 'polos', 'tanks', 'compression', 'joggers', 'shorts', 'hoodies', 'jackets',
+  'leggings', 'sports-bras', 'crop-tops', 'skirts', 'bags', 'bottles', 'caps',
 ];
 const SIZE_PRESETS = {
   'Men S–XL': ['S', 'M', 'L', 'XL'],
